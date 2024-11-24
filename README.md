@@ -19,7 +19,7 @@ To visualize the project, go to the following URL:
 http://localhost:3000
 ```
 
-![img_1.png](img_1.png)
+![preview.png](preview.png)
 
 ## Author
 
