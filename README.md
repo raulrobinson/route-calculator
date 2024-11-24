@@ -48,7 +48,7 @@ docker build -t osrm-backend-alpine:v3.20.3 -f ./docker/Dockerfile-alpine .
 ```
 
 ```bash
-docker-compose up --build
+docker-compose -f route-backend/docker-compose.yml up --build
 ```
 
 - [OSRM](https://download.geofabrik.de/south-america/colombia-latest.osm.pbf)
