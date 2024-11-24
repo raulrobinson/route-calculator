@@ -1,0 +1,10 @@
+{
+  "name": "route-calculator",
+  "version": "1.0.0",
+  "description": "Service for route calculator based on OSRM OpenStreetMap data.",
+  "scripts": {
+    "start": "npx serve"
+  },
+  "private": false,
+  "license": "MIT"
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OSRM Route</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 400px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+<div class="container py-4">
+  <h1 class="text-center mb-4">Route Distance Calculator</h1>
+  <div class="row">
+    <!-- Formulario -->
+    <div class="col-md-6 mb-4">
+      <form id="coordinate-form" class="card p-4 shadow-sm">
+        <h4 class="card-title mb-3">Enter Coordinates</h4>
+        <div class="mb-3">
+          <label for="start-lat" class="form-label">Start Latitude</label>
+          <input type="text" id="start-lat" class="form-control" placeholder="e.g., 11.021463">
+        </div>
+        <div class="mb-3">
+          <label for="start-lng" class="form-label">Start Longitude</label>
+          <input type="text" id="start-lng" class="form-control" placeholder="e.g., -74.867889">
+        </div>
+        <div class="mb-3">
+          <label for="end-lat" class="form-label">End Latitude</label>
+          <input type="text" id="end-lat" class="form-control" placeholder="e.g., 11.036560">
+        </div>
+        <div class="mb-3">
+          <label for="end-lng" class="form-label">End Longitude</label>
+          <input type="text" id="end-lng" class="form-control" placeholder="e.g., -74.827450">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Calculate Distance</button>
+      </form>
+    </div>
+    <!-- Caja de resultados -->
+    <div class="col-md-6">
+      <div class="card p-4 shadow-sm">
+        <h4 class="card-title mb-3">Results</h4>
+        <div>
+          <strong>Distance:</strong> <span id="distance-value">0</span> meters
+        </div>
+        <div class="mt-3">
+          <p class="text-muted">The distance is calculated using the OpenStreetMap routing API.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Mapa -->
+  <div id="map" class="rounded shadow-sm"></div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Polyline -->
+<script src="https://cdn.jsdelivr.net/npm/@mapbox/polyline@1.1.1/src/polyline.min.js"></script>
+<script>
+  const map = L.map('map').setView([11.0197, -74.8682], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map);
+
+  let startMarker, endMarker, routeLayer;
+
+  document.getElementById('coordinate-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const startLat = parseFloat(document.getElementById('start-lat').value);
+    const startLng = parseFloat(document.getElementById('start-lng').value);
+    const endLat = parseFloat(document.getElementById('end-lat').value);
+    const endLng = parseFloat(document.getElementById('end-lng').value);
+
+    if (startMarker) map.removeLayer(startMarker);
+    if (endMarker) map.removeLayer(endMarker);
+    if (routeLayer) map.removeLayer(routeLayer);
+
+    startMarker = L.marker([startLat, startLng]).addTo(map);
+    endMarker = L.marker([endLat, endLng]).addTo(map);
+
+    map.fitBounds(L.latLngBounds([startLat, startLng], [endLat, endLng]));
+
+    try {
+      const response = await fetch(`http://localhost:5000/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full`);
+      //const response = await fetch(`http://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full`);
+      const data = await response.json();
+
+      if (data.code === 'Ok') {
+        const distance = data.routes[0].distance;
+        document.getElementById('distance-value').textContent = distance.toFixed(2);
+
+        const routeCoordinates = polyline.decode(data.routes[0].geometry);
+        routeLayer = L.polyline(routeCoordinates.map(([lat, lng]) => [lat, lng]), { color: 'blue' }).addTo(map);
+      } else {
+        alert('Error fetching route data.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while calculating the distance.');
+    }
+  });
+</script>
+</body>
+</html>
