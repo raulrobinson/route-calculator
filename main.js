@@ -24,8 +24,8 @@ document.getElementById('coordinate-form').addEventListener('submit', async (e) 
     map.fitBounds(L.latLngBounds([startLat, startLng], [endLat, endLng]));
 
     try {
-        const response = await fetch(`http://localhost:5000/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full`);
-        //const response = await fetch(`http://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full`);
+        //const response = await fetch(`http://localhost:5000/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full`);
+        const response = await fetch(`http://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full`);
         const data = await response.json();
 
         if (data.code === 'Ok') {
